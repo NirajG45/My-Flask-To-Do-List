@@ -1,111 +1,185 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flask To-Do List</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f4f8;
-            padding: 40px;
-            max-width: 600px;
-            margin: auto;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Advanced Flask To-Do List</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      padding: 30px;
+      max-width: 700px;
+      margin: auto;
+      transition: all 0.3s ease-in-out;
+    }
 
-        h2 {
-            text-align: center;
-            color: #2c3e50;
-        }
+    :root {
+      --bg-color: #f4f4f4;
+      --text-color: #2c3e50;
+      --card-color: white;
+      --accent-color: #3498db;
+    }
 
-        form {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
+    .dark-mode {
+      --bg-color: #121212;
+      --text-color: #ecf0f1;
+      --card-color: #1e1e1e;
+      --accent-color: #9b59b6;
+    }
 
-        input[type="text"] {
-            padding: 10px;
-            width: 70%;
-            font-size: 16px;
-            border: 2px solid #ccc;
-            border-radius: 6px;
-            outline: none;
-        }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
 
-        button {
-            padding: 10px 20px;
-            background-color: #3498db;
-            border: none;
-            color: white;
-            font-size: 16px;
-            margin-left: 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
+    .toggle-btn {
+      float: right;
+      margin-top: -40px;
+      cursor: pointer;
+      background: none;
+      border: 2px solid var(--accent-color);
+      padding: 6px 12px;
+      border-radius: 6px;
+      color: var(--accent-color);
+    }
 
-        button:hover {
-            background-color: #2980b9;
-        }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
 
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
+    input[type="text"], select {
+      padding: 10px;
+      font-size: 16px;
+      border: 2px solid #ccc;
+      border-radius: 6px;
+      width: 100%;
+    }
 
-        li {
-            background: white;
-            padding: 12px 16px;
-            margin: 8px 0;
-            border-radius: 6px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    button {
+      padding: 10px;
+      font-size: 16px;
+      background-color: var(--accent-color);
+      border: none;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
 
-        .done {
-            text-decoration: line-through;
-            color: #888;
-        }
+    button:hover {
+      background-color: darken(var(--accent-color), 10%);
+    }
 
-        a {
-            text-decoration: none;
-            color: #2ecc71;
-            font-weight: bold;
-            margin-left: 10px;
-        }
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
 
-        a:hover {
-            color: #27ae60;
-        }
+    li {
+      background-color: var(--card-color);
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
 
-        a:last-child {
-            color: #e74c3c;
-        }
+    .task-info {
+      flex: 1;
+    }
 
-        a:last-child:hover {
-            color: #c0392b;
-        }
-    </style>
+    .task-text {
+      font-weight: bold;
+    }
+
+    .done {
+      text-decoration: line-through;
+      color: #888;
+    }
+
+    .priority {
+      font-size: 13px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+    }
+
+    .low { background-color: #dff0d8; color: #3c763d; }
+    .medium { background-color: #fcf8e3; color: #8a6d3b; }
+    .high { background-color: #f2dede; color: #a94442; }
+
+    .time {
+      font-size: 12px;
+      color: #777;
+    }
+
+    .actions a {
+      margin-left: 10px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .actions a.done-link {
+      color: #2ecc71;
+    }
+
+    .actions a.delete-link {
+      color: #e74c3c;
+    }
+
+    @media (max-width: 600px) {
+      li {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .actions {
+        margin-top: 10px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <h2>📝 Flask To-Do List</h2>
-    <form action="/add" method="POST">
-        <input type="text" name="task" placeholder="Enter a new task..." required>
-        <button type="submit">Add</button>
-    </form>
-    <ul>
-        {% for task in tasks %}
-            <li>
-                <span class="{{ 'done' if task.done }}">{{ task.task }}</span>
-                <div>
-                    <a href="/done/{{ loop.index0 }}">✔</a>
-                    <a href="/delete/{{ loop.index0 }}">❌</a>
-                </div>
-            </li>
-        {% endfor %}
-    </ul>
+  <h2>📝 Advanced Flask To-Do List</h2>
+  <button class="toggle-btn" onclick="toggleDarkMode()">🌙 Dark Mode</button>
+  <form action="/add" method="POST">
+    <input type="text" name="task" placeholder="Enter a task..." required />
+    <select name="priority">
+      <option value="low">Low Priority</option>
+      <option value="medium">Medium Priority</option>
+      <option value="high">High Priority</option>
+    </select>
+    <button type="submit">Add Task</button>
+  </form>
+
+  <ul>
+    {% for task in tasks %}
+      <li>
+        <div class="task-info">
+          <div class="task-text {{ 'done' if task.done }}">{{ task.task }}
+            <span class="priority {{ task.priority }}">{{ task.priority.capitalize() }}</span>
+          </div>
+          <div class="time">Added: {{ task.time }}</div>
+        </div>
+        <div class="actions">
+          <a href="/done/{{ loop.index0 }}" class="done-link">✔</a>
+          <a href="/delete/{{ loop.index0 }}" class="delete-link">❌</a>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+
+  <script>
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+    }
+  </script>
 </body>
 </html>
