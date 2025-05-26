@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -11,9 +12,16 @@ def index():
 
 @app.route('/add', methods=['POST'])
 def add():
-    task = request.form.get('task')
-    if task:
-        todo_list.append({'task': task, 'done': False})
+    task_text = request.form.get('task')
+    priority = request.form.get('priority', 'low')  # default is 'low'
+    
+    if task_text:
+        todo_list.append({
+            'task': task_text,
+            'done': False,
+            'priority': priority.lower(),
+            'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        })
     return redirect(url_for('index'))
 
 @app.route('/done/<int:index>')
